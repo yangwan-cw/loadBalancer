@@ -7,7 +7,10 @@
 #include <ws2tcpip.h>
 #include "../include/types.h"
 #include "loadbalancer.h"
+#include "lua.h"
 
+#include <stdlib.h>
+#include <string.h>
 
 LoadBalancer lb; // 全局负载均衡器实例
 StickySession sticky_table[STICKY_TABLE_SIZE]; // 粘性会话表
@@ -31,9 +34,9 @@ void init_load_balancer() {
 
 
     const char *server[][2] = {
-        {"111.xx.6.56", "xx"},
-        {"111.xx.6.56", "xx"},
-        {"111.xx.6.56", "xx"}
+        {"111.228.6.56", "8081"},
+        {"111.228.6.56", "8082"},
+        {"111.228.6.56", "8083"}
     };
     int weights[] = {5, 3, 2}; // 权重 5:3:2
 
@@ -293,7 +296,27 @@ Server *round_robin(LoadBalancer *lb) {
     return selected; // 全部宕机返回 NULL
 }
 
+
+
+
 int main(int argc, char *argv[]) {
+
+    /* 初始化 Lua 配置 */
+    lua_config_t *g_config = lua_config_init("../config.lua");
+    if (!g_config) {
+        fprintf(stderr, "Failed to initialize Lua config\n");
+        return EXIT_FAILURE;
+    }
+
+    /* 显示初始配置 */
+    server_config_t config = g_config->config;
+
+    printf("\nloadConfig\n");
+    printf("  appName: %s\n", config.name);
+
+
+
+
     // Windows 需要初始化 Winsock
 #ifdef _WIN32
     WSADATA wsaData;
@@ -413,5 +436,79 @@ int main(int argc, char *argv[]) {
 #ifdef _WIN32
     WSACleanup();
 #endif
+    return 0;
+}
+char * find_config_file(const char *config_name) {
+    static char config_path[512];
+    char exe_dir[512];
+
+    get_exe_dir(exe_dir, sizeof(exe_dir));
+
+    return strdup(config_name);
+}
+
+lua_config_t *lua_config_init(const char *config_name) {
+    if (config_name == NULL) {
+        config_name = "config.lua";
+    }
+    char *config_path = find_config_file(config_name);
+
+    lua_config_t *ctx = malloc(sizeof(lua_config_t));
+    if (!ctx) {
+        fprintf(stderr, "Failed to allocate memory for lua_config_t\n");
+        return NULL;
+    }
+    /* 创建 Lua 虚拟机 */
+    ctx->L = luaL_newstate();
+    if (!ctx->L) {
+        fprintf(stderr, "Failed to create Lua state\n");
+        free(ctx);
+        return NULL;
+    }
+
+    /* 打开标准库 */
+    luaL_openlibs(ctx->L);
+
+    /* 保存配置文件路径 */
+    strncpy(ctx->config_file, config_name, sizeof(ctx->config_file) - 1);
+
+    /* 加载配置 */
+    if (lua_config_reload(ctx) != 0) {
+        fprintf(stderr, "Failed to load config file: %s\n", config_name);
+        lua_close(ctx->L);
+        free(ctx);
+        return NULL;
+    }
+
+    return ctx;
+}
+
+int lua_config_reload(lua_config_t *ctx) {
+    if (!ctx || !ctx->L) {
+        fprintf(stderr, "Invalid lua_config_t context\n");
+        return -1;
+    }
+
+    /* 加载 Lua 配置文件 */
+    int ret = luaL_dofile(ctx->L, ctx->config_file);
+    if (ret != LUA_OK) {
+        fprintf(stderr, "Lua error: %s\n", lua_tostring(ctx->L, -1));
+        lua_pop(ctx->L, 1);
+        return -1;
+    }
+
+    /* 获取全局 APPNAME 变量 */
+    lua_getglobal(ctx->L, "APPNAME");
+    if (lua_isstring(ctx->L, -1)) {
+        const char *name = lua_tostring(ctx->L, -1);
+        strncpy(ctx->config.name, name, sizeof(ctx->config.name) - 1);
+        ctx->config.name[sizeof(ctx->config.name) - 1] = '\0';
+    } else {
+        fprintf(stderr, "APPNAME not found in config\n");
+        lua_pop(ctx->L, 1);
+        return -1;
+    }
+    lua_pop(ctx->L, 1);
+
     return 0;
 }

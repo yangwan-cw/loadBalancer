@@ -48,8 +48,6 @@
 
 ### 常见的负载均衡器
 
-
-
 ***
 
 ## 架构图
@@ -61,57 +59,65 @@ graph LR
         C2[用户2<br>curl localhost:8080]
         C3[用户3<br>curl localhost:8080]
     end
-    
+
     subgraph 负载均衡器
         LB[Load Balancer<br>:8080]
     end
-    
+
     subgraph 后端服务器
         S1[Server1<br>172.20.0.11:80]
         S2[Server2<br>172.20.0.12:80]
         S3[Server3<br>172.20.0.13:80]
     end
-    
+
     C1 --> LB
     C2 --> LB
     C3 --> LB
-    
     LB --> S1
     LB --> S2
     LB --> S3
 ```
 
-## 请求流程
+## 项目实现基本流程
+
+1. 初始化配置文件，监测配置文件可用性，如果可用则加载配置文件
+2. 启动监听端口，等待客户端连接
+3. 配置文件如果有测试服务器列表，则将服务器加入到服务器池中
+4. 监听客户端请求，收到请求后根据负载均衡算法选择一台服务器
+5. 将请求转发给选中的服务器，并等待服务器响应
+6. 将服务器响应返回给客户端
+7. 循环步骤4-6，直到程序退出
+
+### 时序图
 
 ```mermaid
 sequenceDiagram
+    participant Config as 配置文件
+    participant LB as 负载均衡器
     participant Client as 客户端
-    participant LB as 负载均衡器:8080
-    participant S1 as Server1:80
-    participant S2 as Server2:80
-    participant S3 as Server3:80
-    
-    Client->>LB: HTTP Request #1
-    LB->>S1: Forward (轮询选中)
-    S1-->>LB: Response
-    LB-->>Client: Response from Server1
-    
-    Client->>LB: HTTP Request #2
-    LB->>S2: Forward (轮询选中)
-    S2-->>LB: Response
-    LB-->>Client: Response from Server2
-    
-    Client->>LB: HTTP Request #3
-    LB->>S3: Forward (轮询选中)
-    S3-->>LB: Response
-    LB-->>Client: Response from Server3
+    participant ServerPool as 服务器池
+    participant Server as 目标服务器
+%% 初始化阶段
+    Config ->> LB: 读取配置文件
+    LB ->> Config: 校验配置可用性
+    Note right of LB: 若可用则加载配置
+    LB ->> ServerPool: 加载测试服务器列表\n初始化服务器池
+%% 监听客户端连接
+    LB ->> Client: 启动监听端口，等待连接
+%% 请求-转发过程
+    loop 请求处理循环
+        Client ->> LB: 发送请求
+        LB ->> ServerPool: 选择服务器(基于LB算法)
+        ServerPool ->> LB: 返回选中服务器实例
+        LB ->> Server: 转发请求
+        Server ->> LB: 返回响应
+        LB ->> Client: 响应客户端请求
+    end
 ```
 
 ***
 
 # 模块
-
-
 
 ## 第一步：docker 生成虚拟服务器模拟。创建测试环境（Docker）
 
@@ -154,6 +160,7 @@ from datetime import datetime
 SERVER_NAME = os.environ.get('SERVER_NAME', 'Unknown')
 SERVER_PORT = int(os.environ.get('SERVER_PORT', '80'))
 
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         response = {
@@ -164,15 +171,16 @@ class Handler(BaseHTTPRequestHandler):
             'time': datetime.now().isoformat(),
             'message': f'Hello from {SERVER_NAME}!'
         }
-        
+
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.send_header('X-Server', SERVER_NAME)
         self.end_headers()
         self.wfile.write(json.dumps(response, indent=2).encode())
-    
+
     def log_message(self, format, *args):
         print(f"[{SERVER_NAME}] {args[0]}")
+
 
 if __name__ == '__main__':
     server = HTTPServer(('0.0.0.0', SERVER_PORT), Handler)
@@ -252,6 +260,28 @@ curl http://172.20.0.12
 curl http://172.20.0.13
 ```
 
+## 配置文件模块
+
+## 服务加载模块
+
+1. 支持从配置文件加载服务器列表 & 通过 agent 注册服务器
+
+## 连接池模块
+
+2. 连接池模块: 建立tcp连接池，复用连接，减少连接建立开销
+
+## 心跳检查模块
+
+当服务器建立连接后，定期发送心跳包检测服务器健康状态
+
+## 服务注册模块
+
+
+## 服务发现模块
+
+## 算法模块
+
+负载均衡算法模块：根据对应的算法选择服务器
 
 # 优化
 
