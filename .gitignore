@@ -1,0 +1,393 @@
+# ============================================================================
+# CMake 相关
+# ============================================================================
+
+# CMake 构建目录
+build/
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CMakeLists.txt.user
+CMakeUserPresets.json
+CMakePresets.json
+
+# 构建输出
+*.o
+*.so
+*.a
+*.lib
+*.dll
+*.dylib
+*.exe
+*.out
+
+# ============================================================================
+# IDE 和编辑器
+# ============================================================================
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+.history/
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+
+# Visual Studio
+.vs/
+*.sln.user
+*.vcxproj.user
+*.vcxproj.filters
+Debug/
+Release/
+x64/
+x86/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================================================
+# 依赖和包管理
+# ============================================================================
+
+# vcpkg
+vcpkg_installed/
+[Vv]cpackages/
+
+# Conan
+conan.lock
+
+# Local dependency cache
+.conan/
+
+
+# ============================================================================
+# 编译和构建输出
+# ============================================================================
+
+# 对象文件
+*.o
+*.obj
+*.ko
+*.elf
+
+# 库文件
+*.a
+*.ar
+*.lib
+*.la
+*.lo
+cmake-build-debug
+# 共享对象
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# 可执行文件
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# 依赖追踪
+*.d
+*.dSYM/
+*.su
+*.gch
+*.pcm
+
+# ============================================================================
+# 日志文件
+# ============================================================================
+
+*.log
+*.logs
+log/
+logs/
+*.err
+*.out
+
+# ============================================================================
+# 文档构建输出
+# ============================================================================
+
+docs/_build/
+docs/.doctrees/
+site/
+html/
+latex/
+*.pdf
+
+# ============================================================================
+# 测试相关
+# ============================================================================
+
+# 测试覆盖率
+coverage/
+*.gcda
+*.gcno
+*.gcov
+lcov_report/
+htmlcov/
+
+# CTest
+Testing/
+DartConfiguration.tcl
+
+# 测试输出
+test_output/
+test_results.xml
+*.tap
+
+# ============================================================================
+# 运行时生成的文件
+# ============================================================================
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+*~
+
+# 编辑器备份
+*~
+*.save
+
+# Python 生成的文件
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ============================================================================
+# 性能分析和调试
+# ============================================================================
+
+# 性能分析
+perf.data
+perf.data.old
+*.prof
+callgrind.out.*
+cachegrind.out.*
+
+# 内存检查
+valgrind-out.txt
+vgcore.*
+
+# GDB
+.gdb_history
+.lldb_history
+
+# ============================================================================
+# 容器和虚拟化
+# ============================================================================
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# Kubernetes
+kubeconfig
+.kube/
+
+# Vagrant
+.vagrant/
+*.vagrant
+Vagrantfile.local
+
+# ============================================================================
+# 配置文件（敏感信息）
+# ============================================================================
+
+# 本地配置
+*.local.conf
+*.local.yml
+config.local.h
+config/local/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 密钥和凭证
+*.key
+*.pem
+*.crt
+*.p12
+secrets/
+.secrets/
+
+# ============================================================================
+# 操作系统特定文件
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+.directory
+.Trash-*
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ============================================================================
+# 项目特定文件
+# ============================================================================
+
+# 构建工件
+/bin/
+/lib/
+/include/generated/
+
+# 安装目录（如果在源目录中）
+/install/
+
+# 临时数据
+/tmp/
+/temp/
+*.cache
+
+# 套接字文件
+*.sock
+*.pid
+
+# 核心转储
+core
+core.*
+vgcore.*
+
+# ============================================================================
+# 工具输出
+# ============================================================================
+
+# clang-format 备份
+*.orig
+
+# Doxygen
+docs/doxygen/
+docs/html/
+docs/latex/
+
+# 代码检查工具
+cppcheck_results.xml
+clang-tidy-results.txt
+
+# 静态分析
+scan-build-*/
+
+# ============================================================================
+# CI/CD 相关
+# ============================================================================
+
+# GitHub Actions
+.github/workflows/artifacts/
+
+# GitLab CI
+.gitlab-ci-local/
+
+# Jenkins
+.jenkins/
+
+# Travis CI
+.travis-cache/
+
+# 构建日志
+build.log
+test.log
+
+# ============================================================================
+# 编辑和合并冲突
+# ============================================================================
+
+*.orig
+*.BACKUP.*
+*.BASE.*
+*.REMOTE.*
+*.LOCAL.*
+*.CURRENT.*
+*.rej
+*~.orig
+
+# ============================================================================
+# 版本控制特定
+# ============================================================================
+
+# Git 特定
+.git/
+.gitconfig
+.gitattributes
+
+# SVN
+.svn/
+.SVN/
+
+# Mercurial
+.hg/
+.hgignore
+
+# Darcs
+_darcs/
