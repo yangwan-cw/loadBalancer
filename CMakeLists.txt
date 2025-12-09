@@ -9,8 +9,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(loadBalancer src/main.c
         include/types.h
-        src/loadbalancer.c
-        src/loadbalancer.h
+        src/core/loadbalancer.c
+        src/core/loadbalancer.h
         include/version.h
         src/config/lua_config.c
         src/config/lua_config.h

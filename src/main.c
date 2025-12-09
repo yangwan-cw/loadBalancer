@@ -6,7 +6,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include "../include/types.h"
-#include "loadbalancer.h"
+#include "core/loadbalancer.h"
 #include "lua.h"
 LoadBalancer lb; // 全局负载均衡器实例
 StickySession sticky_table[STICKY_TABLE_SIZE]; // 粘性会话表
