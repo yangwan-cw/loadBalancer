@@ -12,10 +12,6 @@ add_executable(loadBalancer src/main.c
         src/loadbalancer.c
         src/loadbalancer.h
         include/version.h
-        src/config/config_parser.c
-        src/config/config_parser.h
-        src/config/config_validator.c
-        src/config/config_validator.h
         src/config/lua_config.c
         src/config/lua_config.h
         include/lua.h)
