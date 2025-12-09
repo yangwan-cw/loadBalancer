@@ -316,7 +316,7 @@ $RECYCLE.BIN/
 *.pid
 
 # 核心转储
-core
+/core
 core.*
 vgcore.*
 

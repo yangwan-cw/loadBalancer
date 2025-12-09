@@ -66,3 +66,33 @@ lua_config_t *lua_config_init(const char *config_file) {
     }
     return config;
 }
+
+int lua_config_reload(lua_config_t *ctx) {
+    if (!ctx || !ctx->L) {
+        fprintf(stderr, "Invalid lua_config_t context\n");
+        return -1;
+    }
+
+    /* 加载 Lua 配置文件 */
+    int ret = luaL_dofile(ctx->L, ctx->config_file);
+    if (ret != LUA_OK) {
+        fprintf(stderr, "Lua error: %s\n", lua_tostring(ctx->L, -1));
+        lua_pop(ctx->L, 1);
+        return -1;
+    }
+
+    /* 获取全局 APPNAME 变量 */
+    lua_getglobal(ctx->L, "APPNAME");
+    if (lua_isstring(ctx->L, -1)) {
+        const char *name = lua_tostring(ctx->L, -1);
+        strncpy(ctx->config.name, name, sizeof(ctx->config.name) - 1);
+        ctx->config.name[sizeof(ctx->config.name) - 1] = '\0';
+    } else {
+        fprintf(stderr, "APPNAME not found in config\n");
+        lua_pop(ctx->L, 1);
+        return -1;
+    }
+    lua_pop(ctx->L, 1);
+
+    return 0;
+}
