@@ -8,10 +8,6 @@
 #include "../include/types.h"
 #include "loadbalancer.h"
 #include "lua.h"
-
-#include <stdlib.h>
-#include <string.h>
-
 LoadBalancer lb; // 全局负载均衡器实例
 StickySession sticky_table[STICKY_TABLE_SIZE]; // 粘性会话表
 pthread_mutex_t sticky_lock; // 粘性会话表锁
@@ -297,27 +293,15 @@ Server *round_robin(LoadBalancer *lb) {
 }
 
 
-
-
 int main(int argc, char *argv[]) {
-
+    init();
     /* 初始化 Lua 配置 */
-    lua_config_t *g_config = lua_config_init("../config.lua");
+    lua_config_t *g_config = initConfig(NULL);
     if (!g_config) {
         fprintf(stderr, "Failed to initialize Lua config\n");
         return EXIT_FAILURE;
     }
 
-    /* 显示初始配置 */
-    server_config_t config = g_config->config;
-
-    printf("\nloadConfig\n");
-    printf("  appName: %s\n", config.name);
-
-
-
-
-    // Windows 需要初始化 Winsock
 #ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -325,7 +309,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 #endif
-    init();
     init_load_balancer();
     if (argc > 1) {
         if (strcmp(argv[1], "exit") == 0) {
@@ -333,11 +316,6 @@ int main(int argc, char *argv[]) {
             exit(0);
         } else if (strcmp(argv[1], "rr") == 0) {
             lb.algorithm = LB_ROUND_ROBIN;
-        } else if (strcmp(argv[1], "sticky") == 0) {
-            lb.algorithm = LB_STICKY_ROUND_ROBIN;
-        } else if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
-            print_usage(argv[0]);
-            return 0;
         } else {
             printf("Unknown algorithm: %s\n", argv[1]);
             print_usage(argv[0]);
@@ -357,8 +335,6 @@ int main(int argc, char *argv[]) {
     // 设置端口复用（避免 TIME_WAIT 导致绑定失败）
     char opt = 1;
     setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-
     // 绑定地址
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -438,50 +414,7 @@ int main(int argc, char *argv[]) {
 #endif
     return 0;
 }
-char * find_config_file(const char *config_name) {
-    static char config_path[512];
-    char exe_dir[512];
 
-    get_exe_dir(exe_dir, sizeof(exe_dir));
-
-    return strdup(config_name);
-}
-
-lua_config_t *lua_config_init(const char *config_name) {
-    if (config_name == NULL) {
-        config_name = "config.lua";
-    }
-    char *config_path = find_config_file(config_name);
-
-    lua_config_t *ctx = malloc(sizeof(lua_config_t));
-    if (!ctx) {
-        fprintf(stderr, "Failed to allocate memory for lua_config_t\n");
-        return NULL;
-    }
-    /* 创建 Lua 虚拟机 */
-    ctx->L = luaL_newstate();
-    if (!ctx->L) {
-        fprintf(stderr, "Failed to create Lua state\n");
-        free(ctx);
-        return NULL;
-    }
-
-    /* 打开标准库 */
-    luaL_openlibs(ctx->L);
-
-    /* 保存配置文件路径 */
-    strncpy(ctx->config_file, config_name, sizeof(ctx->config_file) - 1);
-
-    /* 加载配置 */
-    if (lua_config_reload(ctx) != 0) {
-        fprintf(stderr, "Failed to load config file: %s\n", config_name);
-        lua_close(ctx->L);
-        free(ctx);
-        return NULL;
-    }
-
-    return ctx;
-}
 
 int lua_config_reload(lua_config_t *ctx) {
     if (!ctx || !ctx->L) {
